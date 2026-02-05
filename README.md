@@ -70,18 +70,24 @@ Generating data types from JSON Schema. This allows for a single source of truth
 
 ## Implementations
 * __Quicktype__
-    * Does not support nested data structures. Nested structures are handled via `nlohmann::json` and are not strictly typed after a single nesting.
-
-* __JSON-Schema-to-Cpp__: __pearmaster/json-schema-codegen__
-    * `boost::optional` dependency to fulfil optional types 
-    * `boost::variant` for `oneOf` specifications
-    * `RapidJSON` for type serialization logic
-
+    * *Pros*: Excellent cross-platform support (C++, Python, TS) and good naming strategies.
+    * *Cons*: Poor support for strictly typed nested structures (reverts to `nlohmann::json` maps); lacks validation logic in C++ setters.
+* __JSON-Schema-to-Cpp (pearmaster)__
+    * *Pros*: Strong C++ focus; supports `$ref` and uses `RapidJSON` for high-performance serialization.
+    * *Cons*: Depends on `boost::variant` (disallowed composition); no native Python/TS support.
 * __pydantic-codegen__
-    * Python & Typescript Generation
-
+    * *Pros*: Best for Python (Default values, Pydantic validation, docstrings). Supports TS.
+    * *Cons*: No C++ path; often allows nullability which is disallowed here.
+* __datamodel-code-generator__
+    * *Pros*: Supports Pydantic (Python) and TypeScript. Handles type-safe models, `Optional` types, and field descriptions.
+    * *Cons*: Primarily Python/TS focused; no C++ generation.
 * __Modelator__
-    * C++ Code Gen
-
+    * *Pros*: Specialized C++ generator for clean models.
+    * *Cons*: Less mainstream; would require custom templates for `Rgs::Types::Datagram` integration.
 * __Jinjava/Mustache__
-    * C++ Code Gen
+    * *Pros*: Maximum flexibility. Can satisfy all requirements (Datagram serialization, snake_case, read/write logic) by excluding unsupported features.
+    * *Cons*: High implementation cost (manual template and parsing logic).
+
+* __userver/Chaotic__
+
+* __JSON Type Definition (JTD) and jtd-codegen__
