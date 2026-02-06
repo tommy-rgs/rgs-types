@@ -1,0 +1,26 @@
+from dataclasses import dataclass, field
+from typing import Optional, List, Union, Any, Dict
+from enum import Enum
+
+{% for enum_name, enum_values in enums.items() %}
+class {{ enum_name }}(Enum):
+    {% for val in enum_values %}
+    {% if val is string %}
+    {{ val.upper() }} = "{{ val }}"
+    {% else %}
+    VALUE_{{ val }} = {{ val }}
+    {% endif %}
+    {% endfor %}
+
+{% endfor %}
+{% for class in classes %}
+@dataclass
+class {{ class.name }}:
+    """
+    {{ class.description or "No description provided." }}
+    """
+    {% for prop_name, prop_info in class.properties.items() %}
+    {{ prop_name }}: {{ prop_info.type_hint }}{{ ' = ' + prop_info.default if prop_info.default is not none else '' }}{{ ' # ' + prop_info.description if prop_info.description else '' }}
+    {% endfor %}
+
+{% endfor %}

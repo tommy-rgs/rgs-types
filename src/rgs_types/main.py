@@ -6,6 +6,7 @@ from pathlib import Path
 from rich import print
 from pydantic import ValidationError
 from .parser import parse_schema_file
+from .generators.python import PythonGenerator
 
 app = typer.Typer()
 
@@ -53,8 +54,13 @@ def generate(
         print(f"[bold blue]Schema Title:[/bold blue] {schema.title}")
         print(f"[bold blue]Schema Type:[/bold blue] {schema.type}")
         
-        # Placeholder for generation logic
-        print(f"[yellow]Generating {lang.value} code to {output_dir}... (Not implemented yet)[/yellow]")
+        if lang == TargetLanguage.python:
+            generator = PythonGenerator(schema, output_dir)
+            generator.generate()
+        else:
+            # Placeholder for other generation logic
+            print(f"[yellow]Generating {lang.value} code to {output_dir}... (Not implemented yet)[/yellow]")
+
         
     except json.JSONDecodeError as e:
         print(f"[bold red]JSON Parse Error:[/bold red] The file '{schema_path}' is not valid JSON.")
