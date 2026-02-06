@@ -1,12 +1,13 @@
 import typer
 import json
 from enum import Enum
-from typing import Optional
+from typing import Optional, List
 from pathlib import Path
 from rich import print
 from pydantic import ValidationError
 from .parser import parse_schema_file
 from .generators.python import PythonGenerator
+from .generators.cpp import CppGenerator
 
 app = typer.Typer()
 
@@ -17,9 +18,9 @@ class TargetLanguage(str, Enum):
 
 @app.command()
 def generate(
-    schema_path: Path = typer.Argument(
+    schema_paths: List[Path] = typer.Argument(
         ..., 
-        help="Path to the JSON Schema file to be parsed.", 
+        help="Path(s) to the JSON Schema file(s) to be parsed.", 
         exists=True, 
         file_okay=True, 
         dir_okay=False, 
@@ -42,37 +43,38 @@ def generate(
     )
 ):
     """
-    Generate cross-platform data types from a JSON Schema file.
+    Generate cross-platform data types from JSON Schema files.
 
-    This tool parses a standard JSON Schema file and generates corresponding data models
+    This tool parses standard JSON Schema files and generates corresponding data models
     in the specified target language (C++, Python, or TypeScript).
     """
-    print(f"[bold green]Parsing schema:[/bold green] {schema_path}")
-    
-    try:
-        schema = parse_schema_file(schema_path)
-        print(f"[bold blue]Schema Title:[/bold blue] {schema.title}")
-        print(f"[bold blue]Schema Type:[/bold blue] {schema.type}")
+    for path in schema_paths:
+        print(f"[bold green]Parsing schema:[/bold green] {path}")
         
-        if lang == TargetLanguage.python:
-            generator = PythonGenerator(schema, output_dir)
-            generator.generate()
-        else:
-            # Placeholder for other generation logic
-            print(f"[yellow]Generating {lang.value} code to {output_dir}... (Not implemented yet)[/yellow]")
+        try:
+            schema = parse_schema_file(path)
+            print(f"[bold blue]Schema Title:[/bold blue] {schema.title}")
+            
+            if lang == TargetLanguage.python:
+                generator = PythonGenerator(schema, output_dir)
+                generator.generate()
+            elif lang == TargetLanguage.cpp:
+                generator = CppGenerator(schema, output_dir)
+                generator.generate()
+            else:
+                print(f"[yellow]Generating {lang.value} code to {output_dir}... (Not implemented yet)[/yellow]")
 
-        
-    except json.JSONDecodeError as e:
-        print(f"[bold red]JSON Parse Error:[/bold red] The file '{schema_path}' is not valid JSON.")
-        print(f"Details: {e}")
-        raise typer.Exit(code=1)
-    except ValidationError as e:
-        print(f"[bold red]Schema Validation Error:[/bold red] The JSON file does not match the expected schema structure.")
-        print(f"Details: {e}")
-        raise typer.Exit(code=1)
-    except Exception as e:
-        print(f"[bold red]Unexpected Error:[/bold red] {e}")
-        raise typer.Exit(code=1)
+        except json.JSONDecodeError as e:
+            print(f"[bold red]JSON Parse Error:[/bold red] The file '{path}' is not valid JSON.")
+            print(f"Details: {e}")
+            raise typer.Exit(code=1)
+        except ValidationError as e:
+            print(f"[bold red]Schema Validation Error:[/bold red] The file '{path}' does not match the expected schema structure.")
+            print(f"Details: {e}")
+            raise typer.Exit(code=1)
+        except Exception as e:
+            print(f"[bold red]Unexpected Error processing '{path}':[/bold red] {e}")
+            raise typer.Exit(code=1)
 
 if __name__ == "__main__":
     app()

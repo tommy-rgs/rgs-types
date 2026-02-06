@@ -1,5 +1,6 @@
 from typer.testing import CliRunner
 from rgs_types.main import app
+from pathlib import Path
 import pytest
 
 runner = CliRunner()
@@ -42,3 +43,17 @@ def test_generate_invalid_schema_validation():
         result = runner.invoke(app, ["bad_schema.json"])
         assert result.exit_code != 0
         assert "Schema Validation Error" in result.stdout 
+
+def test_generate_multiple_files():
+    with runner.isolated_filesystem():
+        with open("schema1.json", "w") as f:
+            f.write('{"title": "Obj1", "type": "object"}')
+        with open("schema2.json", "w") as f:
+            f.write('{"title": "Obj2", "type": "object"}')
+            
+        result = runner.invoke(app, ["schema1.json", "schema2.json", "--lang", "python", "--output", "out"])
+        assert result.exit_code == 0
+        assert "schema1.json" in result.stdout
+        assert "schema2.json" in result.stdout
+        assert (Path("out") / "obj1.py").exists()
+        assert (Path("out") / "obj2.py").exists()

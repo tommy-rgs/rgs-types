@@ -1,0 +1,39 @@
+#pragma once
+
+#include <string>
+#include <vector>
+#include <optional>
+#include <cstdint>
+#include <memory>
+
+{% if namespace %}
+{% set ns_list = namespace.split('::') %}
+{% for ns in ns_list %}
+namespace {{ ns }} {
+{% endfor %}
+{% endif %}
+
+{% for enum in enums %}
+enum class {{ enum.name }} {
+    {% for val in enum.enum_values %}
+    {{ val | upper }},
+    {% endfor %}
+};
+
+{% endfor %}
+{% for struct in structs %}
+/**
+ * {{ struct.description or "No description provided." }}
+ */
+struct {{ struct.name }} {
+    {% for prop in struct.properties %}
+    {{ prop.type }} {{ prop.name }}{% if prop.default is not none %} = {{ prop.default }}{% endif %};{% if prop.description %} // {{ prop.description }}{% endif %}
+    {% endfor %}
+};
+
+{% endfor %}
+{% if namespace %}
+{% for ns in ns_list | reverse %}
+} // namespace {{ ns }}
+{% endfor %}
+{% endif %}

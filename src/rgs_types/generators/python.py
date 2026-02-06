@@ -16,20 +16,20 @@ class PythonGenerator(CodeGenerator):
         )
         self.classes = []
         self.enums = {}
-        self.generated_classes: Set[str] = set()
+        self.generated_types: Set[str] = set()
 
     def _get_python_type(self, prop: JSONSchema, name: str) -> str:
         if prop.ref:
             resolved = self.resolver.resolve(prop.ref)
             ref_name = resolved.title or prop.ref.split("/")[-1]
             ref_name = pascal_case(ref_name)
-            if ref_name not in self.generated_classes:
-                self._collect_class(resolved, ref_name)
-            return ref_name
+            return self._collect_class(resolved, ref_name)
         
         if prop.enum:
             enum_name = pascal_case(name)
-            self.enums[enum_name] = prop.enum
+            if enum_name not in self.generated_types:
+                self.enums[enum_name] = prop.enum
+                self.generated_types.add(enum_name)
             return enum_name
 
         json_type = prop.type
@@ -54,17 +54,19 @@ class PythonGenerator(CodeGenerator):
             if prop.properties:
                 class_name = prop.title or name
                 class_name = pascal_case(class_name)
-                if class_name not in self.generated_classes:
-                    self._collect_class(prop, class_name)
-                return class_name
+                return self._collect_class(prop, class_name)
             return "Dict[str, Any]"
         
         return "Any"
 
-    def _collect_class(self, schema: JSONSchema, name: str):
-        if name in self.generated_classes:
-            return
-        self.generated_classes.add(name)
+    def _collect_class(self, schema: JSONSchema, name: str) -> str:
+        original_name = name
+        counter = 1
+        while name in self.generated_types:
+            name = f"{original_name}_{counter}"
+            counter += 1
+        
+        self.generated_types.add(name)
         
         properties = {}
         if schema.properties:
@@ -99,13 +101,31 @@ class PythonGenerator(CodeGenerator):
             "description": schema.description,
             "properties": properties
         })
+        
+        return name
 
     def generate(self):
-        self.output_dir.mkdir(parents=True, exist_ok=True)
-        
         root_name = self.schema.title or "GeneratedModel"
         root_name = pascal_case(root_name)
         
+        # Determine output directory (if x-python-namespace is present)
+        final_output_dir = self.output_dir
+        if self.schema.python_namespace:
+            # e.g. rgs.types.common -> rgs/types/common
+            ns_path = self.schema.python_namespace.replace(".", "/")
+            final_output_dir = self.output_dir / ns_path
+            
+        final_output_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Create __init__.py files in parent directories if they don't exist
+        # (This is optional but good for Python packages)
+        curr = final_output_dir
+        while curr != self.output_dir and curr != curr.parent:
+            init_file = curr / "__init__.py"
+            if not init_file.exists():
+                init_file.touch()
+            curr = curr.parent
+
         self._collect_class(self.schema, root_name)
         
         template = self.env.get_template("python.py.j2")
@@ -114,7 +134,7 @@ class PythonGenerator(CodeGenerator):
             enums=self.enums
         )
         
-        output_file = self.output_dir / f"{root_name.lower()}.py"
+        output_file = final_output_dir / f"{root_name.lower()}.py"
         with open(output_file, "w") as f:
             f.write(content.strip() + "\n")
         

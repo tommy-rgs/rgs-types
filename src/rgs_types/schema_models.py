@@ -4,6 +4,8 @@ from pydantic import BaseModel, Field
 class JSONSchema(BaseModel):
     schema_uri: Optional[str] = Field(None, alias="$schema")
     id: Optional[str] = Field(None, alias="$id")
+    cpp_namespace: Optional[str] = Field(None, alias="x-cpp-namespace")
+    python_namespace: Optional[str] = Field(None, alias="x-python-namespace")
     title: Optional[str] = None
     description: Optional[str] = None
     type: Optional[str] = None

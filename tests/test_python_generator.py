@@ -195,5 +195,44 @@ def test_generate_python_docstrings():
         # Note: Current implementation only puts description on class, not properties yet.
         # Let's check if we should add them to properties too.
 
+def test_generate_python_namespace_and_conflicts():
+    with runner.isolated_filesystem():
+        schema_content = """
+        {
+          "title": "MainObject",
+          "x-python-namespace": "rgs.messages",
+          "type": "object",
+          "properties": {
+            "part1": {
+                "title": "Conflict",
+                "type": "object",
+                "properties": { "a": { "type": "string" } }
+            },
+            "part2": {
+                "title": "Conflict",
+                "type": "object",
+                "properties": { "b": { "type": "integer" } }
+            }
+          }
+        }
+        """
+        with open("schema.json", "w") as f:
+            f.write(schema_content)
+            
+        result = runner.invoke(app, ["schema.json", "--lang", "python", "--output", "out"])
+        assert result.exit_code == 0
+        
+        out_file = Path("out/rgs/messages/mainobject.py")
+        assert out_file.exists()
+        assert Path("out/rgs/__init__.py").exists()
+        assert Path("out/rgs/messages/__init__.py").exists()
+        
+        content = out_file.read_text()
+        assert "class Conflict:" in content
+        assert "class Conflict_1:" in content
+        assert "part1: Optional[Conflict]" in content
+        assert "part2: Optional[Conflict_1]" in content
+
+
 
 

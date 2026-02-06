@@ -21,28 +21,31 @@ This project uses modern Python tooling for dependency management and packaging.
    ```bash
    poetry install
    ```
-3. Activate the shell:
-   ```bash
-   eval $(poetry env activate)
-   ```
 
 ### Running Tests
 
 ```bash
-pytest
+poetry run pytest
 ```
 
 ## Usage
 
-The tool is available as a CLI command `rgs-gen` (or `poetry run rgs-gen` inside the project).
+The tool is available as a CLI command `rgs-gen`.
 
 ```bash
 # Generate C++ code (default)
-poetry run rgs-gen test_cases/1_simple/schema.json
+poetry run rgs-gen schema1.json schema2.json --output generated/cpp
 
 # Generate Python code to specific directory
-poetry run rgs-gen test_cases/1_simple/schema.json --lang python --output generated/python
+poetry run rgs-gen test_cases/**/*.json --lang python --output generated/python
 
 # View help
 poetry run rgs-gen --help
 ```
+
+### Schema Extensions
+
+RGS Types supports custom extensions to control generation:
+
+* `x-cpp-namespace`: Sets the C++ namespace. Supports nested namespaces via `::` (e.g., `Rgs::Types`).
+* `x-python-namespace`: Sets the Python package/module path (e.g., `rgs.messages`).
