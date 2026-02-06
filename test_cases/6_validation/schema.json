@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/validation.schema.json",
+  "title": "Validation",
+  "description": "A structure containing validation constraints.",
+  "type": "object",
+  "properties": {
+    "positiveNumber": {
+      "description": "A number greater than 0",
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "hexColor": {
+      "description": "A hexadecimal color code",
+      "type": "string",
+      "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+    },
+    "nonEmptyArray": {
+      "description": "An array with at least one item",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "positiveNumber",
+    "hexColor",
+    "nonEmptyArray"
+  ]
+}

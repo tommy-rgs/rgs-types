@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/nested_object.schema.json",
+  "title": "NestedObject",
+  "description": "A structure containing a nested object.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Unique identifier",
+      "type": "integer"
+    },
+    "metadata": {
+      "description": "Metadata about the object",
+      "type": "object",
+      "properties": {
+        "createdAt": {
+          "description": "Creation timestamp",
+          "type": "string"
+        },
+        "version": {
+          "description": "Version number",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "createdAt",
+        "version"
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "metadata"
+  ]
+}

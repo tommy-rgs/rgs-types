@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/enums.schema.json",
+  "title": "Enums",
+  "description": "A structure containing enumerated values.",
+  "type": "object",
+  "properties": {
+    "status": {
+      "description": "The current status of the item",
+      "type": "string",
+      "enum": ["pending", "active", "completed", "archived"]
+    },
+    "priority": {
+      "description": "The priority level",
+      "type": "integer",
+      "enum": [0, 1, 2, 3]
+    }
+  },
+  "required": [
+    "status",
+    "priority"
+  ]
+}

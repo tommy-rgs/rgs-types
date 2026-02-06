@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/refs.schema.json",
+  "title": "References",
+  "description": "A structure using $ref for common and recursive types.",
+  "type": "object",
+  "properties": {
+    "primaryAddress": {
+      "$ref": "#/$defs/address"
+    },
+    "secondaryAddress": {
+      "$ref": "#/$defs/address"
+    },
+    "node": {
+      "$ref": "#/$defs/recursiveNode"
+    }
+  },
+  "required": [
+    "primaryAddress",
+    "node"
+  ],
+  "$defs": {
+    "address": {
+      "type": "object",
+      "properties": {
+        "street": { "type": "string" },
+        "city": { "type": "string" }
+      },
+      "required": ["street", "city"]
+    },
+    "recursiveNode": {
+      "type": "object",
+      "properties": {
+        "value": { "type": "integer" },
+        "next": { "$ref": "#/$defs/recursiveNode" }
+      },
+      "required": ["value"]
+    }
+  }
+}

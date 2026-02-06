@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/arrays.schema.json",
+  "title": "Arrays",
+  "description": "A structure containing arrays of primitives and objects.",
+  "type": "object",
+  "properties": {
+    "tags": {
+      "description": "A list of tags",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "coordinates": {
+      "description": "A list of points",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "x": { "type": "number" },
+          "y": { "type": "number" }
+        },
+        "required": ["x", "y"]
+      }
+    }
+  },
+  "required": [
+    "tags",
+    "coordinates"
+  ]
+}

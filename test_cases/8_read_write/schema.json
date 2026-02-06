@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/read_write.schema.json",
+  "title": "ReadWrite",
+  "description": "A structure using readOnly and writeOnly tags.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Server-generated ID, client should not write to it.",
+      "type": "integer",
+      "readOnly": true
+    },
+    "password": {
+      "description": "Client-provided password, server should not return it.",
+      "type": "string",
+      "writeOnly": true
+    },
+    "displayName": {
+      "description": "A field that can be both read and written.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "password",
+    "displayName"
+  ]
+}

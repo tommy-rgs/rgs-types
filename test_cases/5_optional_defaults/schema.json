@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/optional_defaults.schema.json",
+  "title": "OptionalDefaults",
+  "description": "A structure containing optional fields and default values.",
+  "type": "object",
+  "properties": {
+    "requiredField": {
+      "description": "A field that must be present",
+      "type": "string"
+    },
+    "optionalField": {
+      "description": "A field that may be absent",
+      "type": "string"
+    },
+    "defaultInt": {
+      "description": "An integer with a default value",
+      "type": "integer",
+      "default": 42
+    },
+    "defaultString": {
+      "description": "A string with a default value",
+      "type": "string",
+      "default": "hello"
+    },
+    "optionalWithDefault": {
+      "description": "An optional field with a default value",
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "requiredField",
+    "defaultInt",
+    "defaultString"
+  ]
+}
