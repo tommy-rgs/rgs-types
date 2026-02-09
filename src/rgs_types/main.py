@@ -8,6 +8,7 @@ from pydantic import ValidationError
 from .parser import parse_schema_file
 from .generators.python import PythonGenerator
 from .generators.cpp import CppGenerator
+from .generators.typescript import TypeScriptGenerator
 
 app = typer.Typer()
 
@@ -60,6 +61,9 @@ def generate(
                 generator.generate()
             elif lang == TargetLanguage.cpp:
                 generator = CppGenerator(schema, output_dir)
+                generator.generate()
+            elif lang == TargetLanguage.typescript:
+                generator = TypeScriptGenerator(schema, output_dir)
                 generator.generate()
             else:
                 print(f"[yellow]Generating {lang.value} code to {output_dir}... (Not implemented yet)[/yellow]")
