@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/complex_arrays.schema.json",
+  "title": "ComplexArrays",
+  "description": "Tests homogeneous arrays of objects and shared references.",
+  "type": "object",
+  "properties": {
+    "points": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/point" }
+    },
+    "origin": { "$ref": "#/$defs/point" },
+    "nested_lists": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": { "type": "number" }
+      }
+    }
+  },
+  "required": ["points", "origin"],
+  "$defs": {
+    "point": {
+      "title": "Point",
+      "type": "object",
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      },
+      "required": ["x", "y"]
+    }
+  }
+}

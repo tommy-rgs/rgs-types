@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rgs_types"
-version = "0.4.3"
+version = "0.4.4"
 description = "A CLI tool to generate cross-platform data types (C++, Python, TypeScript) from JSON Schema."
 authors = ["Tommy <tommy@rogorous.co>"]
 readme = "README.md"

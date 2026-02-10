@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rogorous.co/types/namespacing.schema.json",
+  "x-cpp-namespace": "Rgs::Integration::Test",
+  "x-python-namespace": "rgs.integration.test",
+  "title": "NamespacedObject",
+  "description": "Tests cross-platform namespacing requirements.",
+  "type": "object",
+  "properties": {
+    "id": { "type": "integer" }
+  },
+  "required": ["id"]
+}

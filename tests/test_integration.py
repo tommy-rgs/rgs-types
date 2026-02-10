@@ -36,6 +36,11 @@ def test_python_integration(schema_path, tmp_path, data):
     root_name = schema.title or "GeneratedModel"
     module_name = root_name.lower()
     
+    # Determine expected location based on namespace
+    final_module_path = module_name
+    if schema.python_namespace:
+        final_module_path = f"{schema.python_namespace}.{module_name}"
+    
     generator = PythonGenerator(schema, tmp_path)
     generator.generate()
 
@@ -52,9 +57,10 @@ def test_python_integration(schema_path, tmp_path, data):
     sys.path.insert(0, str(tmp_path))
     try:
         import importlib
-        if module_name in sys.modules:
-            del sys.modules[module_name]
-        mod = importlib.import_module(module_name)
+        # Force reload if it was already imported in a previous parametrization
+        if final_module_path in sys.modules:
+            importlib.reload(sys.modules[final_module_path])
+        mod = importlib.import_module(final_module_path)
         
         class_name = root_name.replace(" ", "")
         cls = getattr(mod, class_name)

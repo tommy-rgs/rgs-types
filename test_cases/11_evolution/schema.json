@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/evolution.schema.json",
+  "title": "EvolvedObject",
+  "description": "Tests schema evolution and backwards compatibility.",
+  "type": "object",
+  "properties": {
+    "version": { "type": "integer" },
+    "oldField": { "type": "string" },
+    "newOptionalField": { 
+      "type": "string",
+      "description": "Added in v2, not required."
+    },
+    "newDefaultField": {
+      "type": "integer",
+      "default": 100,
+      "description": "Added in v2 with default, maintains compatibility."
+    }
+  },
+  "required": ["version", "oldField"]
+}
