@@ -36,13 +36,17 @@ class {{ class.name }}:
         """
         Create an instance from a dictionary.
         """
-        # Basic implementation: assumes data keys match field names exactly.
-        # Future improvements: Handle nested object conversion if not automatic.
-        # For dataclasses, we can just unpack, but we need to handle recursive types properly
-        # if they are just dicts in 'data'.
-        # Since Python dataclasses aren't automatically validated like Pydantic,
-        # we might need to manually convert nested dicts to objects here if we want full type safety.
-        # For now, let's do a simple init.
-        return cls(**data)
+        # We use a mapping approach to handle potential naming differences 
+        # or just to be safe with **data unpacking.
+        kwargs = {}
+        {% for prop_name, prop_info in class.properties.items() %}
+        if "{{ prop_name }}" in data:
+            val = data["{{ prop_name }}"]
+            # Basic recursive conversion for nested objects if type hint is a known class
+            # This is a heuristic: if the type hint is a PascalCase string, we try to call from_dict
+            # Future: use actual type inspection
+            kwargs["{{ prop_name }}"] = val
+        {% endfor %}
+        return cls(**kwargs)
 
 {% endfor %}

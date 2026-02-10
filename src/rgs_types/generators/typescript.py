@@ -1,6 +1,7 @@
 import jinja2
 from pathlib import Path
 from typing import Dict, Any, List, Set, Optional
+from rich import print
 from .base import CodeGenerator
 from ..schema_models import JSONSchema
 from .utils import pascal_case
@@ -14,10 +15,10 @@ class TypeScriptGenerator(CodeGenerator):
             trim_blocks=True, 
             lstrip_blocks=True
         )
-        self.interface_list = []
+        self.class_list = []
         self.enum_list = []
         self.generated_types: Set[str] = set()
-        self.ref_map: Dict[str, str] = {} # Map ref string to generated interface name
+        self.ref_map: Dict[str, str] = {} # Map ref string to generated class name
 
     def _get_ts_type(self, prop: JSONSchema, name: str) -> str:
         if prop.ref:
@@ -27,7 +28,7 @@ class TypeScriptGenerator(CodeGenerator):
             resolved = self.resolver.resolve(prop.ref)
             ref_name = resolved.title or prop.ref.split("/")[-1]
             ref_name = pascal_case(ref_name)
-            return self._collect_interface(resolved, ref_name, ref=prop.ref)
+            return self._collect_class(resolved, ref_name, ref=prop.ref)
         
         if prop.enum:
             enum_name = pascal_case(name)
@@ -56,12 +57,12 @@ class TypeScriptGenerator(CodeGenerator):
             if prop.properties:
                 struct_name = prop.title or name
                 struct_name = pascal_case(struct_name)
-                return self._collect_interface(prop, struct_name)
+                return self._collect_class(prop, struct_name)
             return "{ [key: string]: any }"
         
         return "any"
 
-    def _collect_interface(self, schema: JSONSchema, name: str, ref: Optional[str] = None) -> str:
+    def _collect_class(self, schema: JSONSchema, name: str, ref: Optional[str] = None) -> str:
         if ref and ref in self.ref_map:
             return self.ref_map[ref]
 
@@ -81,14 +82,26 @@ class TypeScriptGenerator(CodeGenerator):
                 ts_type = self._get_ts_type(prop, prop_name)
                 is_required = schema.required and prop_name in schema.required
                 
+                default = None
+                if prop.default is not None:
+                    if isinstance(prop.default, str):
+                        default = f'"{prop.default}"'
+                    elif isinstance(prop.default, bool):
+                        default = "true" if prop.default else "false"
+                    elif isinstance(prop.default, (int, float)):
+                        default = str(prop.default)
+                    elif isinstance(prop.default, list) and not prop.default:
+                        default = "[]"
+
                 properties.append({
                     "name": prop_name,
                     "type": ts_type,
                     "required": is_required,
+                    "default": default,
                     "description": prop.description
                 })
         
-        self.interface_list.append({
+        self.class_list.append({
             "name": name,
             "description": schema.description,
             "properties": properties
@@ -102,11 +115,11 @@ class TypeScriptGenerator(CodeGenerator):
         
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
-        self._collect_interface(self.schema, root_name)
+        self._collect_class(self.schema, root_name)
         
         template = self.env.get_template("typescript.ts.j2")
         content = template.render(
-            interfaces=self.interface_list,
+            classes=self.class_list,
             enums=self.enum_list
         )
         

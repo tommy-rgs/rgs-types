@@ -18,11 +18,16 @@ class CppGenerator(CodeGenerator):
         self.enum_list = []
         self.generated_types: Set[str] = set()
         self.ref_map: Dict[str, str] = {} # Map ref string to generated struct name
+        self.collecting_stack: List[str] = [] # Track current collection to detect recursion
 
     def _get_cpp_type(self, prop: JSONSchema, name: str) -> str:
         if prop.ref:
             if prop.ref in self.ref_map:
-                return self.ref_map[prop.ref]
+                res_name = self.ref_map[prop.ref]
+                # If we are currently collecting this type, it's recursive!
+                if res_name in self.collecting_stack:
+                    return f"std::shared_ptr<{res_name}>"
+                return res_name
 
             resolved = self.resolver.resolve(prop.ref)
             ref_name = resolved.title or prop.ref.split("/")[-1]
@@ -32,9 +37,18 @@ class CppGenerator(CodeGenerator):
         if prop.enum:
             enum_name = pascal_case(name)
             if enum_name not in self.generated_types:
+                # Sanitise enum values: prefix numbers
+                sanitized_values = []
+                for v in prop.enum:
+                    val_str = str(v)
+                    if val_str[0].isdigit():
+                        sanitized_values.append(f"VALUE_{val_str}")
+                    else:
+                        sanitized_values.append(val_str)
+
                 self.enum_list.append({
                     "name": enum_name,
-                    "enum_values": [str(v) for v in prop.enum]
+                    "enum_values": sanitized_values
                 })
                 self.generated_types.add(enum_name)
             return enum_name
@@ -77,13 +91,16 @@ class CppGenerator(CodeGenerator):
         if ref:
             self.ref_map[ref] = name
         
+        self.collecting_stack.append(name)
+        
         properties = []
         if schema.properties:
             for prop_name, prop in schema.properties.items():
                 cpp_type = self._get_cpp_type(prop, prop_name)
                 
                 is_required = schema.required and prop_name in schema.required
-                if not is_required:
+                # If it's already a shared_ptr (recursive), don't wrap in optional
+                if not is_required and not cpp_type.startswith("std::shared_ptr"):
                     cpp_type = f"std::optional<{cpp_type}>"
                 
                 default = None
@@ -108,6 +125,7 @@ class CppGenerator(CodeGenerator):
             "properties": properties
         })
         
+        self.collecting_stack.pop()
         return name
 
     def generate(self):

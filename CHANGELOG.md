@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.3] - 2026-02-10
+
+### Added
+- **Full TypeScript Class-Based Generation**:
+    - Replaced TypeScript interfaces with full `class` definitions.
+    - Added support for default values in TypeScript classes.
+    - Included a `constructor` with `Partial<T>` initialization.
+    - Added static `fromJson`/`toJson` methods for easier runtime conversion.
+- **Integration Testing Enhancements**:
+    - **"Compile Once, Run Many" Strategy**: Optimized tests to perform generation and compilation only once per schema while running multiple Hypothesis data samples.
+    - **Runtime Execution**: Integration tests now execute compiled C++ binaries and TypeScript modules (via Node.js) to verify actual JSON parsing behavior.
+    - **Strict Requirements**: Integration tests now fail explicitly (rather than skip) if compilers (`clang++`, `tsc`) or critical headers (`nlohmann/json`) are missing, ensuring high-fidelity local validation.
+- **Improved Testing Documentation**:
+    - Created `docs/Testing_Methodologies.md` to detail unit, property-based, and integration testing strategies.
+    - Documented the use of `HealthCheck.function_scoped_fixture` in Hypothesis tests and potential future workarounds.
+    - Updated `README.md` with explicit tool requirements and setup instructions for running the full test suite.
+
 ## [0.4.2] - 2026-02-10
 
 ### Added

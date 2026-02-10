@@ -26,13 +26,11 @@ def test_generate_typescript_simple():
         assert result.exit_code == 0
         
         out_file = Path("out/simpleobject.ts")
-        assert out_file.exists()
-        
         content = out_file.read_text()
-        assert "export interface SimpleObject {" in content
+        assert "export class SimpleObject {" in content
         assert "isAvailable?: boolean;" in content
-        assert "count: number;" in content
-        assert "name: string;" in content
+        assert "count!: number;" in content
+        assert "name!: string;" in content
 
 def test_generate_typescript_enum():
     with runner.isolated_filesystem():
@@ -59,7 +57,7 @@ def test_generate_typescript_enum():
         assert "export enum Status {" in content
         assert "PENDING = \"pending\"," in content
         assert "ACTIVE = \"active\"," in content
-        assert "status: Status;" in content
+        assert "status!: Status;" in content
 
 def test_generate_typescript_nested():
     with runner.isolated_filesystem():
@@ -83,8 +81,8 @@ def test_generate_typescript_nested():
         assert result.exit_code == 0
         
         content = Path("out/parent.ts").read_text()
-        assert "export interface Child {" in content
-        assert "export interface Parent {" in content
+        assert "export class Child {" in content
+        assert "export class Parent {" in content
         assert "child?: Child;" in content
 
 def test_generate_typescript_to_from_json():
@@ -106,7 +104,7 @@ def test_generate_typescript_to_from_json():
         assert result.exit_code == 0
         
         content = Path("out/jsontest.ts").read_text()
-        assert "export namespace JsonTest {" in content
-        assert "export function fromJson(json: string | object): JsonTest" in content
-        assert "export function toJson(obj: JsonTest): string" in content
+        assert "export class JsonTest {" in content
+        assert "static fromJson(json: string | object): JsonTest" in content
+        assert "static toJson(obj: JsonTest): string" in content
         assert "return JSON.stringify(obj);" in content

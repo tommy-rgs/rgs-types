@@ -285,4 +285,4 @@ def test_generate_cpp_to_from_json():
         assert "friend void to_json(nlohmann::json& j, const JsonTest& p)" in content
         assert "j = nlohmann::json{" in content
         assert "friend void from_json(const nlohmann::json& j, JsonTest& p)" in content
-        assert "j.at(\"val\").get_to(p.val);" in content
+        assert "p.val = j.at(\"val\").get<int64_t>();" in content

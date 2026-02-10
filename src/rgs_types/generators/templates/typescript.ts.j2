@@ -10,26 +10,30 @@ export enum {{ enum.name }} {
 }
 
 {% endfor %}
-{% for interface in interfaces %}
+{% for class in classes %}
 /**
- * {{ interface.description or "No description provided." }}
+ * {{ class.description or "No description provided." }}
  */
-export interface {{ interface.name }} {
-    {% for prop in interface.properties %}
+export class {{ class.name }} {
+    {% for prop in class.properties %}
     /** {{ prop.description or "No description provided." }} */
-    {{ prop.name }}{{ '?' if not prop.required }}: {{ prop.type }};
+    {{ prop.name }}{{ '?' if not prop.required else ('!' if prop.default is none else '') }}: {{ prop.type }}{{ ' = ' + prop.default if prop.default is not none else '' }};
     {% endfor %}
-}
 
-export namespace {{ interface.name }} {
-    export function fromJson(json: string | object): {{ interface.name }} {
-        if (typeof json === 'string') {
-            return JSON.parse(json) as {{ interface.name }};
+    constructor(init?: Partial<{{ class.name }}>) {
+        if (init) {
+            Object.assign(this, init);
         }
-        return json as {{ interface.name }};
+    }
+
+    static fromJson(json: string | object): {{ class.name }} {
+        if (typeof json === 'string') {
+            return new {{ class.name }}(JSON.parse(json));
+        }
+        return new {{ class.name }}(json);
     }
     
-    export function toJson(obj: {{ interface.name }}): string {
+    static toJson(obj: {{ class.name }}): string {
         return JSON.stringify(obj);
     }
 }

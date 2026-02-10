@@ -1,6 +1,7 @@
 import jinja2
 from pathlib import Path
 from typing import Dict, Any, List, Set, Optional
+from rich import print
 from .base import CodeGenerator
 from ..schema_models import JSONSchema
 from .utils import pascal_case
