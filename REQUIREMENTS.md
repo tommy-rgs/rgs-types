@@ -28,10 +28,16 @@
 * __Serialization/Deserialization__:
     * Should be able to Serialize/Deserialize to and from the `Rgs::Types::Datagram` types which is the middleware for serialization
     * An interface that provides visitation within the data structure so that they don't need a specific interface into Datagram
-    * ~~Provide functions to convert between generated types and JSON.~~
-        * ~~C++ should support `nlohmann/json` or similar popular libraries.~~
+    * Support for parsing and converting to and from the native programming language models (e.g., Python dataclasses, C++ structs, TS interfaces) with full fidelity.
+    * Ensure data consistency and interoperability when sending data between different language models (e.g., Python -> Datagram -> C++).
+* __Testing & Data Generation__:
+    * Use `hypothesis-jsonschema` to generate valid JSON data from schemas.
+    * Use generated data to validate that the parsing logic in all target languages correctly handles the full range of the JSON specification supported.
+    * _Note_: `hypothesis-jsonschema` has limited support for recursive references; these may need manual test case generation.
 * __Naming Strategies__:
-    * Support mapping JSON `camelCase` to C++ `snake_case`.
+    * Naming of the local variables should be maintained from the JSON Schema to the codebase member variable
+    * ~~Support mapping JSON `camelCase` to C++ `snake_case`.~~
+    * ~~Support mapping JSON name to programming specific naming conventions~~
     * Support mapping type name to internal data name
         * Key -> Type mapping for member variables
     * Use schema `title` or filename as the base for class/struct names.

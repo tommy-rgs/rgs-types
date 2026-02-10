@@ -24,8 +24,19 @@ This project uses modern Python tooling for dependency management and packaging.
 
 ### Running Tests
 
+Standard test execution:
 ```bash
 poetry run pytest
+```
+
+Parallel execution (using all available cores):
+```bash
+poetry run pytest -n auto
+```
+
+Skip slow property-based tests:
+```bash
+poetry run pytest -m "not slow"
 ```
 
 ## Usage
