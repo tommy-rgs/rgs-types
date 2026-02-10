@@ -1,7 +1,12 @@
+# Python specific ignores
 .venv/
 __pycache__/
 .pytest_cache/
 *.pyc
-
-.gemini/
 .hypothesis/
+
+# Build Output Files
+build/
+
+# Other Ignores
+.gemini/

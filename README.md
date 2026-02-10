@@ -2,6 +2,8 @@
 
 Generating data types from JSON Schema. This allows for a single source of truth for a type definition and can give types that are defined within each of the specified languages that are supported. This allows for the enforcement of data types for modules and provides the interface for each of these nodes to communicate outwards into the world. 
 
+[__Requirements__](./REQUIREMENTS.md) are laid out for how the type generator functions and interacts with each other type within this ecosystem.
+
 
 ## Development Setup
 
@@ -60,3 +62,17 @@ RGS Types supports custom extensions to control generation:
 
 * `x-cpp-namespace`: Sets the C++ namespace. Supports nested namespaces via `::` (e.g., `Rgs::Types`).
 * `x-python-namespace`: Sets the Python package/module path (e.g., `rgs.messages`).
+
+## Generated Code Features
+
+### JSON Conversion
+
+All generated models include helper methods for JSON serialization/deserialization:
+
+* **C++**:
+    * Uses `nlohmann/json`.
+    * Provides `to_json(json& j, const T& obj)` and `from_json(const json& j, T& obj)` ADL-friendly functions.
+* **Python**:
+    * Dataclasses include `to_dict()` instance method and `from_dict(data)` class method.
+* **TypeScript**:
+    * Namespaces matching the interface name provide `fromJson(json)` and `toJson(obj)` helper functions.

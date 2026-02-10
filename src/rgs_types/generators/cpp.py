@@ -17,13 +17,17 @@ class CppGenerator(CodeGenerator):
         self.struct_list = []
         self.enum_list = []
         self.generated_types: Set[str] = set()
+        self.ref_map: Dict[str, str] = {} # Map ref string to generated struct name
 
     def _get_cpp_type(self, prop: JSONSchema, name: str) -> str:
         if prop.ref:
+            if prop.ref in self.ref_map:
+                return self.ref_map[prop.ref]
+
             resolved = self.resolver.resolve(prop.ref)
             ref_name = resolved.title or prop.ref.split("/")[-1]
             ref_name = pascal_case(ref_name)
-            return self._collect_type(resolved, ref_name)
+            return self._collect_type(resolved, ref_name, ref=prop.ref)
         
         if prop.enum:
             enum_name = pascal_case(name)
@@ -59,23 +63,19 @@ class CppGenerator(CodeGenerator):
         
         return "nlohmann::json"
 
-    def _collect_type(self, schema: JSONSchema, name: str) -> str:
-        # Check if this exact schema object has been collected already
-        # To do this properly we'd need a map of schema object id to generated name.
-        # For now, let's just disambiguate by name if it's already used.
-        
+    def _collect_type(self, schema: JSONSchema, name: str, ref: Optional[str] = None) -> str:
+        if ref and ref in self.ref_map:
+            return self.ref_map[ref]
+
         original_name = name
         counter = 1
         while name in self.generated_types:
-            # We should ideally check if it's the SAME structure.
-            # But let's assume if it's already in generated_types, we might need a new name
-            # unless it's literally the same JSONSchema object (by id).
-            # This is a bit complex without a schema registry.
-            # Let's simple: if title is same, we'll append a suffix for now.
             name = f"{original_name}_{counter}"
             counter += 1
         
         self.generated_types.add(name)
+        if ref:
+            self.ref_map[ref] = name
         
         properties = []
         if schema.properties:

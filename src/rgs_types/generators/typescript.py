@@ -17,13 +17,17 @@ class TypeScriptGenerator(CodeGenerator):
         self.interface_list = []
         self.enum_list = []
         self.generated_types: Set[str] = set()
+        self.ref_map: Dict[str, str] = {} # Map ref string to generated interface name
 
     def _get_ts_type(self, prop: JSONSchema, name: str) -> str:
         if prop.ref:
+            if prop.ref in self.ref_map:
+                return self.ref_map[prop.ref]
+            
             resolved = self.resolver.resolve(prop.ref)
             ref_name = resolved.title or prop.ref.split("/")[-1]
             ref_name = pascal_case(ref_name)
-            return self._collect_interface(resolved, ref_name)
+            return self._collect_interface(resolved, ref_name, ref=prop.ref)
         
         if prop.enum:
             enum_name = pascal_case(name)
@@ -57,7 +61,10 @@ class TypeScriptGenerator(CodeGenerator):
         
         return "any"
 
-    def _collect_interface(self, schema: JSONSchema, name: str) -> str:
+    def _collect_interface(self, schema: JSONSchema, name: str, ref: Optional[str] = None) -> str:
+        if ref and ref in self.ref_map:
+            return self.ref_map[ref]
+
         original_name = name
         counter = 1
         while name in self.generated_types:
@@ -65,6 +72,8 @@ class TypeScriptGenerator(CodeGenerator):
             counter += 1
         
         self.generated_types.add(name)
+        if ref:
+            self.ref_map[ref] = name
         
         properties = []
         if schema.properties:

@@ -86,3 +86,27 @@ def test_generate_typescript_nested():
         assert "export interface Child {" in content
         assert "export interface Parent {" in content
         assert "child?: Child;" in content
+
+def test_generate_typescript_to_from_json():
+    with runner.isolated_filesystem():
+        schema_content = """
+        {
+          "title": "JsonTest",
+          "type": "object",
+          "properties": {
+            "val": { "type": "integer" }
+          },
+          "required": ["val"]
+        }
+        """
+        with open("schema.json", "w") as f:
+            f.write(schema_content)
+            
+        result = runner.invoke(app, ["schema.json", "--lang", "typescript", "--output", "out"])
+        assert result.exit_code == 0
+        
+        content = Path("out/jsontest.ts").read_text()
+        assert "export namespace JsonTest {" in content
+        assert "export function fromJson(json: string | object): JsonTest" in content
+        assert "export function toJson(obj: JsonTest): string" in content
+        assert "return JSON.stringify(obj);" in content

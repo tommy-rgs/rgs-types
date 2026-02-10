@@ -32,6 +32,7 @@ def test_generate_cpp_simple():
         assert out_file.exists()
         
         content = out_file.read_text()
+        assert content.count("{") == content.count("}")
         assert "struct SimpleObject {" in content
         assert "bool is_available" in content
         assert "int64_t item_count" in content
@@ -65,6 +66,7 @@ def test_generate_cpp_enum():
         assert out_file.exists()
         
         content = out_file.read_text()
+        assert content.count("{") == content.count("}")
         assert "enum class Status {" in content
         assert "PENDING," in content
         assert "ACTIVE," in content
@@ -98,6 +100,7 @@ def test_generate_cpp_nested():
         
         out_file = Path("out/rootobject.hpp")
         content = out_file.read_text()
+        assert content.count("{") == content.count("}")
         assert "struct ChildObject {" in content
         assert "struct RootObject {" in content
         assert "std::optional<ChildObject> child" in content
@@ -131,6 +134,7 @@ def test_generate_cpp_arrays_and_namespace():
         out_file = Path("out/arraymessage.hpp")
         content = out_file.read_text()
         
+        assert content.count("{") == content.count("}")
         assert "namespace my_messages {" in content
         assert "std::vector<std::string> tags;" in content
         assert "std::optional<std::vector<int64_t>> scores;" in content
@@ -165,6 +169,7 @@ def test_generate_cpp_refs():
         out_file = Path("out/refobject.hpp")
         content = out_file.read_text()
         
+        assert content.count("{") == content.count("}")
         assert "struct Address {" in content
         assert "struct RefObject {" in content
         assert "Address main_address;" in content
@@ -193,6 +198,7 @@ def test_generate_cpp_documentation():
         out_file = Path("out/docobject.hpp")
         content = out_file.read_text()
         
+        assert content.count("{") == content.count("}")
         assert "A very useful object." in content
         assert "Speed in m/s" in content
 
@@ -217,6 +223,7 @@ def test_generate_cpp_custom_namespace():
         out_file = Path("out/mytype.hpp")
         content = out_file.read_text()
         
+        assert content.count("{") == content.count("}")
         assert "namespace Rgs {" in content
         assert "namespace Types {" in content
         assert "namespace Common {" in content
@@ -225,8 +232,6 @@ def test_generate_cpp_custom_namespace():
         assert "} // namespace Rgs" in content
 
 def test_generate_cpp_naming_conflicts():
-    # Test two nested objects with same name but different structure
-    # This currently might fail if we just use titles for deduplication
     with runner.isolated_filesystem():
         schema_content = """
         {
@@ -254,8 +259,30 @@ def test_generate_cpp_naming_conflicts():
         
         out_file = Path("out/conflictobject.hpp")
         content = out_file.read_text()
+        assert "struct SharedName {" in content
+        assert "struct SharedName_1 {" in content
+
+def test_generate_cpp_to_from_json():
+    with runner.isolated_filesystem():
+        schema_content = """
+        {
+          "title": "JsonTest",
+          "type": "object",
+          "properties": {
+            "val": { "type": "integer" }
+          },
+          "required": ["val"]
+        }
+        """
+        with open("schema.json", "w") as f:
+            f.write(schema_content)
+            
+        result = runner.invoke(app, ["schema.json", "--lang", "cpp", "--output", "out"])
+        assert result.exit_code == 0
         
-        # Current implementation just skips if name is in generated_types.
-        # If they have the same name but different content, we should ideally disambiguate.
-        # Let's see what happens.
-        print(f"DEBUG CONFLICT:\n{content}")
+        content = Path("out/jsontest.hpp").read_text()
+        assert "#include <nlohmann/json.hpp>" in content
+        assert "friend void to_json(nlohmann::json& j, const JsonTest& p)" in content
+        assert "j = nlohmann::json{" in content
+        assert "friend void from_json(const nlohmann::json& j, JsonTest& p)" in content
+        assert "j.at(\"val\").get_to(p.val);" in content

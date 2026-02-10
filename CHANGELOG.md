@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.2] - 2026-02-10
+
+### Added
+- **JSON Serialization Support**:
+    - **C++**: Added `to_json`/`from_json` bindings for `nlohmann/json` integration.
+    - **Python**: Added `to_dict`/`from_dict` methods for dataclasses.
+    - **TypeScript**: Added `fromJson`/`toJson` helper namespaces for interfaces.
+- **Integration Testing**: Added `tests/test_integration.py` to verify generated code across target languages.
+
+### Fixed
+- **Recursion Support**: Resolved `RecursionError` in all generators when handling circular structures using a reference mapping cache.
+- **Python Forward References**: Added `from __future__ import annotations` to support recursive type hints.
+- **Python Field Ordering**: Sorted dataclass fields so that those with default values correctly follow those without.
+
 ## [0.4.1] - 2026-02-10
 
 ### Added

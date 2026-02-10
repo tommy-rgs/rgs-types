@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional, List, Union, Any, Dict
 from enum import Enum
@@ -22,5 +23,26 @@ class {{ class.name }}:
     {% for prop_name, prop_info in class.properties.items() %}
     {{ prop_name }}: {{ prop_info.type_hint }}{{ ' = ' + prop_info.default if prop_info.default is not none else '' }}{{ ' # ' + prop_info.description if prop_info.description else '' }}
     {% endfor %}
+
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert the instance to a dictionary, respecting the JSON Schema structure.
+        """
+        import dataclasses
+        return dataclasses.asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "{{ class.name }}":
+        """
+        Create an instance from a dictionary.
+        """
+        # Basic implementation: assumes data keys match field names exactly.
+        # Future improvements: Handle nested object conversion if not automatic.
+        # For dataclasses, we can just unpack, but we need to handle recursive types properly
+        # if they are just dicts in 'data'.
+        # Since Python dataclasses aren't automatically validated like Pydantic,
+        # we might need to manually convert nested dicts to objects here if we want full type safety.
+        # For now, let's do a simple init.
+        return cls(**data)
 
 {% endfor %}

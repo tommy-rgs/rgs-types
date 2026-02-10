@@ -6,6 +6,8 @@
 #include <cstdint>
 #include <memory>
 
+#include <nlohmann/json.hpp>
+
 {% if namespace %}
 {% set ns_list = namespace.split('::') %}
 {% for ns in ns_list %}
@@ -20,6 +22,12 @@ enum class {{ enum.name }} {
     {% endfor %}
 };
 
+NLOHMANN_JSON_SERIALIZE_ENUM( {{ enum.name }}, {
+    {% for val in enum.enum_values %}
+    { {{ enum.name }}::{{ val | upper }}, "{{ val }}" },
+    {% endfor %}
+})
+
 {% endfor %}
 {% for struct in structs %}
 /**
@@ -28,7 +36,24 @@ enum class {{ enum.name }} {
 struct {{ struct.name }} {
     {% for prop in struct.properties %}
     {{ prop.type }} {{ prop.name }}{% if prop.default is not none %} = {{ prop.default }}{% endif %};{% if prop.description %} // {{ prop.description }}{% endif %}
+
     {% endfor %}
+
+    friend void to_json(nlohmann::json& j, const {{ struct.name }}& p) {
+        j = nlohmann::json{
+            {% for prop in struct.properties %}
+            {"{{ prop.name }}", p.{{ prop.name }}},
+            {% endfor %}
+        };
+    }
+
+    friend void from_json(const nlohmann::json& j, {{ struct.name }}& p) {
+        {% for prop in struct.properties %}
+        if (j.contains("{{ prop.name }}")) {
+            j.at("{{ prop.name }}").get_to(p.{{ prop.name }});
+        }
+        {% endfor %}
+    }
 };
 
 {% endfor %}

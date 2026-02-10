@@ -21,4 +21,17 @@ export interface {{ interface.name }} {
     {% endfor %}
 }
 
+export namespace {{ interface.name }} {
+    export function fromJson(json: string | object): {{ interface.name }} {
+        if (typeof json === 'string') {
+            return JSON.parse(json) as {{ interface.name }};
+        }
+        return json as {{ interface.name }};
+    }
+    
+    export function toJson(obj: {{ interface.name }}): string {
+        return JSON.stringify(obj);
+    }
+}
+
 {% endfor %}
